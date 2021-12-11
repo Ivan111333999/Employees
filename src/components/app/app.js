@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import AppInfo from "../app-info/app-info";
 import SearchPanel from "../search-panel/search-panel";
 import AppFilter from "../app-filter/app-filter"; 
@@ -14,9 +14,20 @@ const App = () => {
         {name: 'Banan', salary: 3000 + '$', increase: false, like: false, id: 2},
         {name: 'Ivan', salary: 15000 + '$', increase: false, like: false, id: 3},
     ]);
+
     const [term, setTerm] = useState('');
     const [filter, setFilter] = useState('all');
-    const [maxId, setMaxId] = useState(4);
+    const [maxId, setMaxId] = useState(3);
+
+    useEffect(() => {
+        const data = JSON.parse(localStorage.getItem("data"));
+        setData(data);
+        setMaxId(data[data.length - 1].id + 1);
+    }, []);
+
+    const initialData = useMemo(() => {
+        return data;   
+    }, []);
 
     const deleteItem = (id) => {
         setData(data => data.filter(item => item.id !== id))
@@ -27,7 +38,7 @@ const App = () => {
         if (name === '' || salary === '') {
             return;
         }
-        setMaxId(maxId => ++maxId);
+        setMaxId(maxId => maxId + 1);
         
         const newItem = {
             name, 
@@ -87,7 +98,14 @@ const App = () => {
     const visibleData = onFilterEmp(searchEmp(data, term), filter);
     const countEmployees = data.length;
     const countPrize = data.filter(item => item.increase).length;
-
+    
+    if (!JSON.parse(localStorage.getItem("data"))) {
+        localStorage.setItem("data", JSON.stringify(data)) 
+    }
+    
+    if (initialData !== data) {
+        localStorage.setItem("data", JSON.stringify(data)) 
+    }
 
     return (
         <div className="app">
